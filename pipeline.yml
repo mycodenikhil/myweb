@@ -1,0 +1,77 @@
+en in app
+Sign up
+
+Sign In
+
+
+
+Mischa Skyda
+Mischa Skyda
+Follow
+Jul 3, 2019
+
+·
+4 min read
+·
+
+Listen
+
+
+Save
+
+
+
+
+
+Host on Github Pages from a private repo: step-by-step guide
+
+Github gives developers a bunch of nice opportunities for free: private repositories, pipelines, free hosting on Github Pages. However, a PRO (paid) account is needed to publish something from a private repo to Github Pages.
+
+But what if you want to have your codebase private, host your website on Github and don’t pay any single penny for it? This article will show how to do it.
+
+Technically, the output code won’t be private, but it won’t contain any artefacts, only the bundle. Let’s go:
+
+1. We need two repositories on Github. The first one should be private and contain the source code, the second one should be public and blank (it will contain the bundled code for publishing).
+
+2. Configure your bundler (Webpack/Parcel/etc.) to generate the output (including index.html) to the /dist/ folder in the root of the private repo. For example, Parcel configuration will look like this (scripts section in package.json):
+
+"scripts": {
+  "dev": "parcel index.html -d docs",
+  "build": "parcel build index.html -d docs --public-url ."
+}
+3. Now we need a YAML file, which will build our bundle and push it to the public repository.
+
+Create a pipeline.yml file in the root folder of the private repo and add the following code there:
+
+# run the pipeline on changes in master branch
+trigger:
+  - master
+# build environment - OS
+pool:
+  vmImage: 'ubuntu-latest'
+steps:
+  # build environment - Node
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'install node.js'
+  # NPM task
+  - script: |
+      npm install
+      npm run build
+    displayName: 'npm install and build'
+  # Git task
+  - script: |
+      # remove git history and settings - to avoid inheritance
+      rm -rf .git
+      # re-initialise git
+      git init
+      git config user.name "<yourName>"
+      git config user.email "<yourEmail>"
+      git remote set-url origin https://<githubLogin>:${GIT_TOKEN}@github.com/<githubLogin>/<publicRepositoryName>.git
+      # add and commit /docs/ folder
+      git add docs
+      git commit -m "deploy the bundle"
+      # push the commit to the public repository
+      git push origin HEAD:master --force
+    displayName: 'deploy the production bundle'
