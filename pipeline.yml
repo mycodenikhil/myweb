@@ -23,9 +23,9 @@ steps:
       rm -rf .git
       # re-initialise git
       git init
-      git config user.name "<yourName>"
-      git config user.email "<yourEmail>"
-      git remote set-url origin https://<githubLogin>:${GIT_TOKEN}@github.com/<githubLogin>/<publicRepositoryName>.git
+      git config user.name "<mycodenikhil>"
+      git config user.email "<n.nikhilgowda2001@gmail.com>"
+      git remote set-url origin https://github.com>:${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}@github.com/mycodenikhil/myweb.git
       # add and commit /docs/ folder
       git add docs
       git commit -m "deploy the bundle"
